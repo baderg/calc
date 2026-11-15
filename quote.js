@@ -16,21 +16,21 @@ function quote(form, settings) {
   settings = settings || {};
   const lumpPct = (form.lumpPct === 0.06 || +form.lumpPct === 0.06) ? 0.06 : 0.08;
   const opts = { livingMin: settings.livingMin || {} };
-  const S = +form.enpf || 0, ownIn = +form.own || 0, surr = form.transfer ? (+form.surrender || 0) : 0;
+  const S = +form.enpf || 0, rsv = [0.005, 0.01, 0.015, 0.02].includes(+form.reserve) ? +form.reserve : 0, Su = Math.floor(S * (1 - rsv)), ownIn = +form.own || 0, surr = form.transfer ? (+form.surrender || 0) : 0;
   const variants = [];
   const gps = form.gps && form.gps.length ? form.gps : [1];
   gps.forEach((gp, idx) => {
     const base = { sign: form.sign, dob: form.dob, gender: form.gender, oppv: form.oppv, disability: form.disability, gp };
     const probe = E.calculate(Object.assign({ enpf: S, own: 0, surrender: 0 }, base), opts);
     let contract;
-    if (form.mode === 'max') contract = S + ownIn + surr;
+    if (form.mode === 'max') contract = Su + ownIn + surr;
     else if (form.mode === 'custom') contract = +form.contract || 0;
     else contract = form.transfer ? Math.max(probe.minSum, surr) : probe.minSum;   // выкупную сумму уменьшить нельзя
     const r = E.calculate(Object.assign({ enpf: contract, own: 0, surrender: 0 }, base), opts);
     const lump = form.transfer ? 0 : Math.round(contract * lumpPct);
     let enpfIn, surrIn;
-    if (form.transfer) { surrIn = Math.min(surr, contract); enpfIn = Math.min(S, Math.max(contract - surrIn, 0)); }   // выкупная фиксирована, ЕНПФ уменьшается
-    else { enpfIn = Math.min(S, contract); surrIn = 0; }
+    if (form.transfer) { surrIn = Math.min(surr, contract); enpfIn = Math.min(Su, Math.max(contract - surrIn, 0)); }   // выкупная фиксирована, ЕНПФ уменьшается
+    else { enpfIn = Math.min(Su, contract); surrIn = 0; }
     const enpfLeft = Math.max(S - enpfIn, 0);
     const gap = Math.max(contract - enpfIn - surrIn, 0);
     const lumpIn = Math.min(lump, gap);
@@ -38,7 +38,7 @@ function quote(form, settings) {
     const toCard = lump - lumpIn;
     let title = gps.length > 1 ? (idx === 0 ? 'С минимальной доплатой' : (idx === 1 ? 'С защитой семьи' : 'Вариант ' + (idx + 1))) : 'Расчёт';
     if (form.mode !== 'min' && gps.length > 1) title = 'Вариант: гарантированный период ' + yearsWord(gp);
-    variants.push({ title, gp, contract, enpfIn, enpfLeft, surrIn, lumpIn, own, lumpTotal: lump, toCard,
+    variants.push({ title, gp, reserve: rsv, contract, enpfIn, enpfLeft, surrIn, lumpIn, own, lumpTotal: lump, toCard,
       monthlyStart: r.monthlyAtStart, minSum: probe.minSum, status: r.status, result: r });
   });
   const r0 = variants[0].result;
@@ -80,6 +80,7 @@ function textReport(q) {
     L.push('Ваши собственные деньги: ' + money(v.own));
     L.push('Сумма договора: ' + money(v.contract));
     if (f.transfer || v.enpfLeft > 0) L.push('Останется в ЕНПФ после оформления договора: ' + money(v.enpfLeft));
+    if (v.reserve > 0) L.push('Резерв в ЕНПФ на колебания инвестдохода: ' + String(v.reserve * 100).replace('.', ',') + '% от накоплений');
     L.push('Ежемесячная выплата: ' + money(v.monthlyStart) + ', пожизненно' + (c.deferred ? ' (на дату начала выплат, с индексацией ' + Math.round(v.result.rates.j * 100) + '% в год)' : ' (с индексацией ' + Math.round(v.result.rates.j * 100) + '% в год)'));
     L.push('Гарантированный период: ' + (v.gp === 0 ? 'без гарантированного периода' : yearsWord(v.gp)));
     if (!f.transfer) { L.push('Единовременная выплата всего: ' + money(v.lumpTotal) + ' (' + Math.round((+f.lumpPct || 0.08) * 100) + '% от суммы договора)'); L.push('Единовременная выплата на карту: ' + money(v.toCard)); }

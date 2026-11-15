@@ -27,14 +27,14 @@ document.querySelectorAll('nav button').forEach(b => b.addEventListener('click',
 
 function readForm() {
   return { name: $('name').value.trim(), dob: $('dob').value, sign: $('sign').value, gender: $('gender').value, oppv: $('oppv').value,
-    disability: $('disability').value, enpf: num($('enpf').value), own: num($('own').value), lumpPct: +$('lumpPct').value,
+    disability: $('disability').value, enpf: num($('enpf').value), own: num($('own').value), lumpPct: +$('lumpPct').value, reserve: +$('reserve').value,
     transfer: $('transfer').checked, oldDate: $('oldDate').value, surrender: num($('surr').value),
     mode: $('mode').value, contract: num($('contract').value), gps: [+$('gpA').value] };
 }
 function writeForm(f) {
   $('name').value = f.name || ''; $('dob').value = f.dob; $('sign').value = f.sign; $('gender').value = f.gender; $('oppv').value = f.oppv;
   $('disability').value = f.disability; $('enpf').value = f.enpf ? fmt(f.enpf) : ''; $('own').value = f.own ? fmt(f.own) : '';
-  $('lumpPct').value = String(+f.lumpPct === 0.06 ? 0.06 : 0.08); $('lumpWrap').hidden = !!f.transfer; $('mode').value = f.mode; $('contract').value = f.contract ? fmt(f.contract) : '';
+  $('lumpPct').value = String(+f.lumpPct === 0.06 ? 0.06 : 0.08); $('reserve').value = String([0.005, 0.01, 0.015, 0.02].includes(+f.reserve) ? +f.reserve : 0); $('lumpWrap').hidden = !!f.transfer; $('mode').value = f.mode; $('contract').value = f.contract ? fmt(f.contract) : '';
   $('contractWrap').hidden = f.mode !== 'custom'; $('transfer').checked = !!f.transfer; $('transferWrap').hidden = !f.transfer; $('oldDate').value = f.oldDate || ''; $('surr').value = f.surrender ? fmt(f.surrender) : ''; $('gpA').value = f.gps[0];
 }
 
@@ -69,7 +69,7 @@ function render(q) {
     return `<div class="card"><h3>${v.title}</h3>
       <div class="big">${Q.money(v.monthlyStart)} / мес</div>
       ${kv('Вид', r.type)}${kv('Начало выплат', r.startDateRu + ' (' + r.startAge + ' лет)')}
-      ${q.form.transfer ? kv('Выкупная сумма другой КСЖ в договор', Q.money(v.surrIn)) : ''}${kv('Накопления ЕНПФ в договор', Q.money(v.enpfIn))}${(q.form.transfer || v.enpfLeft > 0) ? kv('Останется в ЕНПФ', Q.money(v.enpfLeft)) : ''}${q.form.transfer ? '' : kv('Из единовременной в договор', Q.money(v.lumpIn))}
+      ${q.form.transfer ? kv('Выкупная сумма другой КСЖ в договор', Q.money(v.surrIn)) : ''}${kv('Накопления ЕНПФ в договор', Q.money(v.enpfIn))}${(q.form.transfer || v.enpfLeft > 0) ? kv('Останется в ЕНПФ', Q.money(v.enpfLeft)) : ''}${v.reserve > 0 ? kv('Резерв в ЕНПФ', String(v.reserve * 100).replace('.', ',') + '%') : ''}${q.form.transfer ? '' : kv('Из единовременной в договор', Q.money(v.lumpIn))}
       ${kv('Собственные средства', Q.money(v.own))}${kv('Сумма договора', Q.money(v.contract))}
       ${kv('Гарантированный период', v.gp === 0 ? 'без' : Q.yearsWord(v.gp) + ' (до ' + r.gpEndRu + ')')}
       ${q.form.transfer ? '' : kv('Единовременная всего / на карту', Q.money(v.lumpTotal) + ' / ' + Q.money(v.toCard))}
@@ -144,6 +144,7 @@ async function makePdf(q, o) {
       if (!tr) body.push(['Из единовременной выплаты в договор', Q.money(v.lumpIn)]);
       body.push(['Собственные средства', Q.money(v.own)], ['Сумма договора', Q.money(v.contract)]);
       if (tr || v.enpfLeft > 0) body.push(['Останется в ЕНПФ после оформления', Q.money(v.enpfLeft)]);
+      if (v.reserve > 0) body.push(['Резерв в ЕНПФ на колебания инвестдохода', String(v.reserve * 100).replace('.', ',') + '% от накоплений']);
       body.push(
         ['Гарантированный период', v.gp === 0 ? 'без' : Q.yearsWord(v.gp) + ' (до ' + v.result.gpEndRu + ')']);
       if (!tr) body.push(['Единовременная выплата всего (' + Math.round(q.form.lumpPct * 100) + '%)', Q.money(v.lumpTotal)], ['Единовременная выплата на карту', Q.money(v.toCard)]);
