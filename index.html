@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="ru"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#38aa34"><title>Калькулятор ПА</title>
+<link rel="manifest" href="manifest.json"><link rel="icon" href="icons/icon-192.png"><link rel="apple-touch-icon" href="icons/icon-192.png">
+<link rel="stylesheet" href="style.css"></head>
+<body>
+<header><img id="logo" src="logo.svg" alt="Евразия"><h1>Калькулятор ПА</h1></header>
+<main>
+<section id="tab-calc" class="tab active">
+ <form id="f" autocomplete="off">
+  <label class="inline"><input type="checkbox" id="transfer"> Переоформление договора из другой КСЖ</label>
+  <div id="transferWrap" hidden><div class="row"><label>Дата действующего договора<input id="oldDate" type="date"></label>
+  <label>Выкупная сумма на дату заключения, ₸<input id="surr" inputmode="numeric" placeholder="0"></label></div>
+  <p class="hint">С даты действующего договора должно пройти не менее 2 лет. Выкупная сумма добавляется к накоплениям ЕНПФ. При переоформлении единовременной выплаты нет.</p></div>
+  <label>Клиент (для истории и PDF)<input id="name" type="text" placeholder="Имя клиента"></label>
+  <div class="row"><label>Дата рождения<input id="dob" type="date" required></label>
+  <label>Дата заключения<input id="sign" type="date" required></label></div>
+  <div class="row"><label>Пол<select id="gender"><option>мужской</option><option>женский</option></select></label>
+  <label>ОППВ (проф. накопления за 60 мес.)<select id="oppv"><option>нет</option><option>да</option></select></label></div>
+  <label>Инвалидность (бессрочная)<select id="disability"><option>нет</option><option>инвалидность 1 группы</option><option>инвалидность 2 группы</option><option>инвалидность 3 группы</option></select></label>
+  <label>Накопления в ЕНПФ, ₸<input id="enpf" inputmode="numeric" placeholder="0" required></label>
+  <div class="row"><label>Собственные средства, ₸<input id="own" inputmode="numeric" placeholder="0"></label>
+  <label id="lumpWrap">Единовременная выплата<select id="lumpPct"><option value="0.08">8% (максимум)</option><option value="0.06">6%</option></select></label></div>
+  <label>Что считаем<select id="mode"><option value="min">Минимальный договор</option><option value="max">Договор на все накопления</option><option value="custom">Своя сумма договора</option></select></label>
+  <label id="contractWrap" hidden>Сумма договора, ₸<input id="contract" inputmode="numeric"></label>
+  <label>Гарантированный период, лет<select id="gpA"></select></label>
+  <button class="primary" type="submit">Рассчитать</button>
+ </form>
+ <div id="warn" class="warn" hidden></div>
+ <div id="result" hidden>
+  <h2>Результат</h2>
+  <div id="cards"></div>
+  <div class="actions">
+   <button id="bCopy">Скопировать текст</button>
+   <button id="bShareTxt">Отправить текст</button>
+   <button id="bPdf" class="primary">PDF с графиком</button>
+   <button id="bSave">Сохранить в историю</button>
+  </div>
+  <label class="inline"><input type="checkbox" id="pdfMonthly" checked> В PDF полный помесячный график</label>
+  <select id="pdfVar" hidden></select>
+  <details><summary>Выплаты по годам</summary><div id="yearly" class="tbl"></div></details>
+  <details><summary>Помесячный график и выкупные суммы</summary><div id="monthly" class="tbl"></div></details>
+  <details><summary>Текст расчёта</summary><pre id="txt"></pre></details>
+ </div>
+</section>
+<section id="tab-hist" class="tab">
+ <input id="search" type="search" placeholder="Поиск по имени">
+ <div id="hist"></div>
+ <div class="actions"><button id="bExport">Экспорт истории</button><label class="btn">Импорт<input id="imp" type="file" accept="application/json" hidden></label></div>
+</section>
+<section id="tab-set" class="tab">
+ <h2>Настройки</h2>
+ <label>Гарантированный период по умолчанию, лет<select id="sGpA"></select></label>
+ <label>Ваше имя и телефон для PDF<input id="sAgent" placeholder="Аскар, +7 ..."></label>
+ <h3>Прожиточный минимум по годам, ₸</h3>
+ <p class="hint">Нужен для минимальной суммы договора (70% от прожиточного минимума). В вашем файле значения заданы до 2026 года. Для 2027+ введите значение, когда оно будет утверждено.</p>
+ <div id="lmTable"></div>
+ <button id="sSave" class="primary">Сохранить настройки</button>
+ <p class="hint" id="ver"></p>
+</section>
+</main>
+<nav><button data-tab="tab-calc" class="on">Расчёт</button><button data-tab="tab-hist">История</button><button data-tab="tab-set">Настройки</button></nav>
+<script src="mort.js"></script><script src="engine.js"></script><script src="quote.js"></script>
+<script src="lib/jspdf.umd.min.js"></script><script src="lib/jspdf.plugin.autotable.min.js"></script><script src="lib/fonts.js"></script>
+<script src="app.js"></script>
+</body></html>
