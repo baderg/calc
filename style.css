@@ -26,3 +26,5 @@ pre{white-space:pre-wrap;font:13px/1.4 ui-monospace,monospace}
 .h{background:#fff;border:1px solid var(--bd);border-radius:12px;padding:10px 12px;margin:8px 0;display:flex;justify-content:space-between;gap:8px;align-items:center}
 .h small{color:var(--mut);display:block}.h button{padding:8px 10px;font-size:14px}
 [hidden]{display:none!important}
+
+header select{width:auto;margin:0;padding:6px 8px;font-size:14px;border-radius:8px}
