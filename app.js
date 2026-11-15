@@ -12,7 +12,7 @@ const num = s => +(String(s || '').replace(/[^\d.]/g, '')) || 0;
 // форматирование ввода денег пробелами
 ['enpf', 'own', 'contract', 'surr'].forEach(id => $(id).addEventListener('input', e => { const v = e.target.value.replace(/\D/g, ''); e.target.value = v ? fmt(+v) : ''; }));
 const todayISO = () => { const d = new Date(); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); };
-function fillGp(sel, val) { sel.innerHTML = ''; for (let i = 0; i <= 20; i++) { const o = document.createElement('option'); o.value = i; o.textContent = i === 0 ? 'без' : i; sel.appendChild(o); } sel.value = val; }
+function fillGp(sel, val) { sel.innerHTML = ''; for (let i = 0; i <= 30; i++) { const o = document.createElement('option'); o.value = i; o.textContent = i === 0 ? 'без' : i; sel.appendChild(o); } sel.value = val; }
 fillGp($('gpA'), settings.gpA); fillGp($('sGpA'), settings.gpA);
 $('sign').value = todayISO();
 $('transfer').addEventListener('change', () => { $('transferWrap').hidden = !$('transfer').checked; $('lumpWrap').hidden = $('transfer').checked; });
